@@ -3,14 +3,14 @@
 import { Button } from '@/components/ui/button';
 import React, { FC } from 'react';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { FormSendOtp } from '@/modules/partials';
 
 interface AuthRegisterPageProps {}
 
 const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
-	const [step, setStep] = React.useState(1);
+	const [step, setStep] = React.useState<number>(1);
 
 	return (
 		<main>
@@ -58,12 +58,24 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 					</div>
 
 					{/* content */}
-					<div className='mx-auto space-y-3 text-center'>
-						<h3 className='text-2xl'>Pilih metode verifikasi</h3>
-						<p>
-							Pilih salah satu metode dibawah ini untuk mendapatkan kode
-							verifikasi.
-						</p>
+					<div className='mx-auto space-y-8 text-center'>
+						<div className='space-y-3'>
+							<h3 className='text-xl'>Pilih Metode Verifikasi</h3>
+							<p>
+								Pilih salah satu metode dibawah ini untuk mendapatkan kode
+								verifikasi.
+							</p>
+						</div>
+
+						<div className='rounded-xl border border-gray-300 p-5 text-left shadow-sm'>
+							<div className='flex gap-x-3 items-center'>
+								<Mail strokeWidth={1.5} className='size-10' />
+								<div>
+									<p className='text-base font-bold'>E-mail ke</p>
+									<span>bromen@gmail.com</span>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			)}
