@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import React, { FC, useState } from 'react';
+import React, { FC } from 'react';
 import {
 	Form,
 	FormControl,
@@ -16,10 +16,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 
-interface FormSendOtpProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface FormSendOtpProps extends React.HTMLAttributes<HTMLDivElement> {
+	buttonText: string;
+	extraComponent?: React.ReactNode;
+}
 
-const FormSendOtp: FC<FormSendOtpProps> = ({ className, ...props }) => {
-	const [isPending, setIsPending] = useState<boolean>(false);
+const FormSendOtp: FC<FormSendOtpProps> = ({
+	className,
+	buttonText,
+	extraComponent,
+	...props
+}) => {
+	const [isPending, setIsPending] = React.useState<boolean>(false);
 
 	const form = useForm<z.infer<typeof sendOtpDto>>({
 		mode: 'onChange',
@@ -48,13 +56,17 @@ const FormSendOtp: FC<FormSendOtpProps> = ({ className, ...props }) => {
 							</FormItem>
 						)}
 					/>
-					<Button
-						type='submit'
-						disabled={isPending}
-						className='w-full font-semibold'
-					>
-						Daftar
-					</Button>
+
+					<div className='space-y-3'>
+						{extraComponent}
+						<Button
+							type='submit'
+							disabled={isPending}
+							className='w-full font-semibold'
+						>
+							{buttonText}
+						</Button>
+					</div>
 				</form>
 			</Form>
 		</div>

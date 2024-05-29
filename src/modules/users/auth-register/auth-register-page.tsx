@@ -9,8 +9,8 @@ interface AuthRegisterPageProps {}
 
 const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 	return (
-		<main className=''>
-			<div className='layout mt-3 space-y-5 md:hidden'>
+		<main>
+			<div className='layout mt-3 space-y-5 sm:hidden'>
 				{/* heading */}
 				<div className='flex items-center justify-between'>
 					<div className='flex items-center gap-x-4'>
@@ -19,16 +19,16 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 						</Link>
 						<span className='text-lg font-bold'>Daftar ke Bromen</span>
 					</div>
-					<Link href='/login' className='hover:text-primary font-medium'>
+					<Link href='/login' className='font-medium hover:text-primary'>
 						Masuk
 					</Link>
 				</div>
 
 				{/* form */}
-				<FormSendOtp />
+				<FormSendOtp buttonText='Daftar' />
 
 				{/* footer */}
-				<div className='text-center leading-5 tracking-tight'>
+				<div className='text-center leading-6 tracking-tight'>
 					Dengan mendaftar, saya menyetujui <br />
 					<Link href='/register' className='font-bold text-primary'>
 						Syarat & Ketentuan
