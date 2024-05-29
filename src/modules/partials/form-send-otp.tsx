@@ -15,16 +15,19 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { Loader } from 'lucide-react';
 
 interface FormSendOtpProps extends React.HTMLAttributes<HTMLDivElement> {
 	buttonText: string;
 	extraComponent?: React.ReactNode;
+	setStep?: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const FormSendOtp: FC<FormSendOtpProps> = ({
 	className,
 	buttonText,
 	extraComponent,
+	setStep,
 	...props
 }) => {
 	const [isPending, setIsPending] = React.useState<boolean>(false);
@@ -37,7 +40,16 @@ const FormSendOtp: FC<FormSendOtpProps> = ({
 		},
 	});
 
-	const onSubmit = async (data: z.infer<typeof sendOtpDto>) => {};
+	const onSubmit = async (data: z.infer<typeof sendOtpDto>) => {
+		setIsPending(true);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		try {
+			setStep && setStep(2);
+		} catch (error) {
+		} finally {
+			setIsPending(false);
+		}
+	};
 
 	return (
 		<div className={cn('grid gap-6', className)} {...props}>
@@ -64,6 +76,7 @@ const FormSendOtp: FC<FormSendOtpProps> = ({
 							disabled={isPending}
 							className='w-full font-semibold'
 						>
+							{isPending && <Loader className='mr-2 size-4 animate-spin' />}
 							{buttonText}
 						</Button>
 					</div>
