@@ -41,6 +41,7 @@ const FormRegister: FC<FormRegisterProps> = props => {
 					<form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
 						<div className='space-y-3'>
 							<FormField
+								disabled
 								name='email'
 								control={form.control}
 								defaultValue={email}

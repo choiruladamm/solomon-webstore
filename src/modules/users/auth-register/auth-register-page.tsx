@@ -12,11 +12,11 @@ import { otpDto } from '@/dto/otp.dto';
 import { registUserDto } from '@/dto/regist-user.dto';
 import {
 	DialogConfirmEmail,
+	FormEmail,
 	OtpVerification,
 	SelectVerification,
 } from '@/modules/partials/auth';
 import FormRegister from './form-register';
-import FormEmail from './form-email';
 
 interface AuthRegisterPageProps {}
 
@@ -102,6 +102,7 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 						form={formSendOtp}
 						isPending={isPending}
 						onSubmit={handleOpenDialogConfirm}
+						buttonText='Daftar'
 					/>
 
 					{/* footer */}

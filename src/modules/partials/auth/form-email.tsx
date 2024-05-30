@@ -19,10 +19,12 @@ interface FormEmailProps {
 	form: UseFormReturn<z.infer<typeof sendOtpDto>>;
 	isPending: boolean;
 	onSubmit: () => void;
+	extraComponent?: React.ReactNode;
+	buttonText: string;
 }
 
 const FormEmail: FC<FormEmailProps> = props => {
-	const { form, isPending, onSubmit } = props;
+	const { form, isPending, onSubmit, extraComponent, buttonText } = props;
 
 	return (
 		<div className={cn('grid gap-6')}>
@@ -42,14 +44,17 @@ const FormEmail: FC<FormEmailProps> = props => {
 						)}
 					/>
 
-					<Button
-						type='submit'
-						disabled={isPending}
-						className='w-full font-semibold'
-					>
-						{isPending && <Loader className='mr-2 size-4 animate-spin' />}
-						Daftar
-					</Button>
+					<div className='space-y-3'>
+						{extraComponent}
+						<Button
+							type='submit'
+							disabled={isPending}
+							className='w-full font-semibold'
+						>
+							{isPending && <Loader className='mr-2 size-4 animate-spin' />}
+							{buttonText}
+						</Button>
+					</div>
 				</form>
 			</Form>
 		</div>
