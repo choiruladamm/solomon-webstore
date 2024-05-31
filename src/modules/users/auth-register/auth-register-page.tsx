@@ -28,6 +28,8 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 	const [isDialogConfirmOpen, setIsDialogConfirmOpen] =
 		React.useState<boolean>(false);
 	const [stepOtp, setStepOtp] = React.useState<number>(1);
+	const [isEmailRegistered, setIsEmailRegistered] =
+		React.useState<boolean>(false);
 
 	const router = useRouter();
 
@@ -59,8 +61,23 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 
 	const handleOpenDialogConfirm = async () => {
 		setIsPending(true);
-		setIsDialogConfirmOpen(true);
 		await new Promise(resolve => setTimeout(resolve, 1500));
+		setIsDialogConfirmOpen(true);
+
+		// try {
+		// 	const response = await axios.post(`${apiBackendUrl}/users/register`, {
+		// 		email: formSendOtp.getValues('email'),
+		// 	});
+		// 	if (response.status === 201) {
+		// 		setIsEmailRegistered(true);
+		// 	} else if (response.status === 409) {
+		// 		setIsEmailRegistered(false);
+		// 	}
+		// } catch (error) {
+		// 	toast.error('Gagal memeriksa email, silahkan coba lagi');
+		// } finally {
+		// 	setIsPending(false);
+		// }
 	};
 
 	const handleSendOtp = async () => {
@@ -196,6 +213,7 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 					setIsPending(false);
 					setIsDialogConfirmOpen(false);
 				}}
+				isEmailRegistered={isEmailRegistered}
 			/>
 		</main>
 	);
