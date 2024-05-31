@@ -30,7 +30,7 @@ const SelectVerification: FC<SelectVerificationProps> = props => {
 				</div>
 				<div
 					onClick={onSelectMethod}
-					className='rounded-xl border border-gray-300 p-4 text-left shadow-sm'
+					className='rounded-xl border hover:cursor-pointer border-gray-300 p-4 text-left shadow-sm'
 				>
 					<div className='flex items-center gap-x-3'>
 						<Mail strokeWidth={1.5} className='size-10' />

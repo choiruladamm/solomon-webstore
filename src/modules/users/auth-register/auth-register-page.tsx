@@ -17,6 +17,9 @@ import {
 	SelectVerification,
 } from '@/modules/partials/auth';
 import FormRegister from './form-register';
+import { toast } from 'sonner';
+import axios, { AxiosError } from 'axios';
+import { apiBackendUrl } from '@/lib/utils';
 
 interface AuthRegisterPageProps {}
 
@@ -60,24 +63,58 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 		await new Promise(resolve => setTimeout(resolve, 1500));
 	};
 
+	const handleSendOtp = async () => {
+		try {
+			await axios.post(`${apiBackendUrl}/send-mail	`, {
+				email: formSendOtp.getValues('email'),
+			});
+			toast.success('Kode OTP telah dikirim ke email Anda');
+			setStepOtp(3);
+			console.log(`
+			send otp to ${formSendOtp.getValues('email')}
+		`);
+		} catch (error) {
+			toast.error('Gagal mengirim OTP, silahkan coba lagi');
+		}
+	};
+
 	const handleVerifOtp = async (data: z.infer<typeof otpDto>) => {
 		setIsPending(true);
 		await new Promise(resolve => setTimeout(resolve, 1500));
-		console.log(`Email: ${formSendOtp.getValues('email')}, OTP: ${data.otp}`);
 
-		setIsPending(false);
-		setStepOtp(4);
+		try {
+			await axios.post(`${apiBackendUrl}/otp/verify`, {
+				email: formSendOtp.getValues('email'),
+				otp: data.otp,
+			});
+			toast.success('OTP berhasil diverifikasi');
+			setStepOtp(4);
+		} catch (error) {
+			toast.error('Gagal verifikasi OTP, silahkan coba lagi');
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	const handleRegistUser = async (data: z.infer<typeof registUserDto>) => {
 		setIsPending(true);
 		await new Promise(resolve => setTimeout(resolve, 3000));
-		console.log(
-			`Email: ${formSendOtp.getValues('email')}, Nama: ${data.fullName}, Password: ${data.password}`,
-		);
 
-		setIsPending(false);
-		router.replace('/');
+		try {
+			await axios.post(`${apiBackendUrl}/users/register`, {
+				email: formSendOtp.getValues('email'),
+				fullName: data.fullName,
+				password: data.password,
+			});
+			toast.success('Berhasil mendaftar');
+			router.replace('/');
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				toast.error(error.response?.data.message);
+			}
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	return (
@@ -123,12 +160,7 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 				<SelectVerification
 					email={formSendOtp.getValues('email')}
 					onBack={() => setStepOtp(1)}
-					onSelectMethod={() => {
-						console.log(`
-							send otp to ${formSendOtp.getValues('email')}
-						`);
-						setStepOtp(3);
-					}}
+					onSelectMethod={handleSendOtp}
 				/>
 			)}
 
@@ -163,7 +195,6 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 					setStepOtp(2);
 					setIsPending(false);
 					setIsDialogConfirmOpen(false);
-					console.log(formSendOtp.getValues('email'));
 				}}
 			/>
 		</main>
