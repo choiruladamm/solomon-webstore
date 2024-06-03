@@ -16,6 +16,12 @@ import {
 	SelectVerification,
 } from '@/modules/partials/auth';
 import SheetHelper from './sheet-helper';
+import FormLogin from './form-login';
+import { loginUserDto } from '@/dto/login-user.dto';
+import axios, { AxiosError } from 'axios';
+import { apiBackendUrl } from '@/lib/utils';
+import { setCookie } from 'cookies-next';
+import { toast } from 'sonner';
 
 interface AuthLoginPageProps {}
 
@@ -28,110 +34,132 @@ const AuthLoginPage: FC<AuthLoginPageProps> = ({}) => {
 
 	const router = useRouter();
 
-	const formSendOtp = useForm<z.infer<typeof sendOtpDto>>({
+	const formLogin = useForm<z.infer<typeof loginUserDto>>({
 		mode: 'onChange',
-		resolver: zodResolver(sendOtpDto),
+		resolver: zodResolver(loginUserDto),
 		defaultValues: {
 			email: '',
+			password: '',
 		},
 	});
 
-	const formVerifOtp = useForm<z.infer<typeof otpDto>>({
-		mode: 'onChange',
-		resolver: zodResolver(otpDto),
-		defaultValues: {
-			otp: '',
-		},
-	});
+	// const formVerifOtp = useForm<z.infer<typeof otpDto>>({
+	// 	mode: 'onChange',
+	// 	resolver: zodResolver(otpDto),
+	// 	defaultValues: {
+	// 		otp: '',
+	// 	},
+	// });
 
-	const handleOpenDialogConfirm = async () => {
+	// const handleOpenDialogConfirm = async () => {
+	// 	setIsPending(true);
+	// 	setIsDialogConfirmOpen(true);
+	// 	await new Promise(resolve => setTimeout(resolve, 1500));
+	// };
+
+	// const handleVerifOtp = async (data: z.infer<typeof otpDto>) => {
+	// 	setIsPending(true);
+	// 	await new Promise(resolve => setTimeout(resolve, 1500));
+	// 	console.log(`Email: ${formLogin.getValues('email')}, OTP: ${data.otp}`);
+
+	// 	router.replace('/');
+	// 	setIsPending(false);
+	// };
+
+	const handleLoginUser = async (data: z.infer<typeof loginUserDto>) => {
+		setIsOpenSheet(false);
 		setIsPending(true);
-		setIsDialogConfirmOpen(true);
-		await new Promise(resolve => setTimeout(resolve, 1500));
-	};
+		await new Promise(resolve => setTimeout(resolve, 3000));
 
-	const handleVerifOtp = async (data: z.infer<typeof otpDto>) => {
-		setIsPending(true);
-		await new Promise(resolve => setTimeout(resolve, 1500));
-		console.log(`Email: ${formSendOtp.getValues('email')}, OTP: ${data.otp}`);
+		const body = {
+			email: data.email,
+			password: data.password,
+		};
 
-		router.replace('/');
-		setIsPending(false);
+		try {
+			const res = await axios.post(`${apiBackendUrl}/users/login`, body);
+			if (res.status === 201) {
+				router.replace('/');
+				setCookie('t_user', res.data.access_token);
+				toast.success('Berhasil Login');
+			}
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				toast.error(error.response?.data.message[0] || 'Gagal Login');
+			}
+		}
 	};
 
 	return (
 		<main>
-			{stepOtp === 1 && (
-				<div className='layout mt-3 space-y-6 sm:hidden'>
-					{/* heading */}
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-x-4'>
-							<Link href='/'>
-								<ArrowLeft strokeWidth={1.5} className='size-7' />
-							</Link>
-							<span className='text-lg font-bold'>Masuk ke Bromen</span>
-						</div>
-						<Link href='/register' className='font-medium hover:text-primary'>
-							Daftar
+			<div className='layout mt-3 space-y-6 sm:hidden'>
+				{/* heading */}
+				<div className='flex items-center justify-between'>
+					<div className='flex items-center gap-x-4'>
+						<Link href='/'>
+							<ArrowLeft strokeWidth={1.5} className='size-7' />
 						</Link>
+						<span className='text-lg font-bold'>Masuk ke Bromen</span>
 					</div>
-
-					{/* form */}
-					<FormEmail
-						form={formSendOtp}
-						isPending={isPending}
-						onSubmit={handleOpenDialogConfirm}
-						buttonText='Masuk'
-						extraComponent={
-							<>
-								<div className='text-right leading-5 tracking-tight'>
-									<button
-										onClick={() => setIsOpenSheet(true)}
-										className='font-medium text-primary'
-									>
-										Butuh bantuan?
-									</button>
-								</div>
-								<SheetHelper open={isOpenSheet} onOpenChange={setIsOpenSheet} />
-							</>
-						}
-					/>
-
-					{/* footer */}
-					<div className='text-center leading-5 tracking-tight'>
-						Belum punya akun?{' '}
-						<Link href='/register' className='font-bold text-primary'>
-							Daftar sekarang
-						</Link>
-					</div>
+					<Link href='/register' className='font-medium hover:text-primary'>
+						Daftar
+					</Link>
 				</div>
-			)}
 
-			{stepOtp === 2 && (
+				{/* form */}
+				<FormLogin
+					form={formLogin}
+					isPending={isPending}
+					onSubmit={handleLoginUser}
+					extraComponent={
+						<>
+							<div className='text-right leading-5 tracking-tight'>
+								<button
+									onClick={() => setIsOpenSheet(true)}
+									className='font-medium text-primary'
+								>
+									Butuh bantuan?
+								</button>
+							</div>
+							<SheetHelper open={isOpenSheet} onOpenChange={setIsOpenSheet} />
+						</>
+					}
+				/>
+
+				{/* footer */}
+				<div className='text-center leading-5 tracking-tight'>
+					Belum punya akun?{' '}
+					<Link href='/register' className='font-bold text-primary'>
+						Daftar sekarang
+					</Link>
+				</div>
+			</div>
+
+			{/* {stepOtp === 2 && (
 				<SelectVerification
-					email={formSendOtp.getValues('email')}
+					email={formLogin.getValues('email')}
 					onBack={() => setStepOtp(1)}
 					onSelectMethod={() => {
 						console.log(`
-							send otp to ${formSendOtp.getValues('email')}
+							send otp to ${formLogin.getValues('email')}
 						`);
 						setStepOtp(3);
 					}}
 				/>
-			)}
+			)} */}
 
-			{stepOtp === 3 && (
+			{/* {stepOtp === 3 && (
 				<OtpVerification
-					email={formSendOtp.getValues('email')}
+					email={formLogin.getValues('email')}
 					form={formVerifOtp}
 					isPending={isPending}
 					onBack={() => setStepOtp(1)}
 					onSubmit={handleVerifOtp}
 				/>
-			)}
+			)} */}
 
-			<DialogConfirmEmail
-				email={formSendOtp.getValues('email')}
+			{/* <DialogConfirmEmail
+				email={formLogin.getValues('email')}
 				isOpen={isDialogConfirmOpen}
 				onClose={() => {
 					setIsDialogConfirmOpen(false);
@@ -141,9 +169,9 @@ const AuthLoginPage: FC<AuthLoginPageProps> = ({}) => {
 					setStepOtp(2);
 					setIsPending(false);
 					setIsDialogConfirmOpen(false);
-					console.log(formSendOtp.getValues('email'));
+					console.log(formLogin.getValues('email'));
 				}}
-			/>
+			/> */}
 		</main>
 	);
 };

@@ -20,11 +20,10 @@ interface FormEmailProps {
 	isPending: boolean;
 	onSubmit: () => void;
 	extraComponent?: React.ReactNode;
-	buttonText: string;
 }
 
 const FormEmail: FC<FormEmailProps> = props => {
-	const { form, isPending, onSubmit, extraComponent, buttonText } = props;
+	const { form, isPending, onSubmit, extraComponent } = props;
 
 	return (
 		<div className={cn('grid gap-6')}>
@@ -52,7 +51,7 @@ const FormEmail: FC<FormEmailProps> = props => {
 							className='w-full font-semibold'
 						>
 							{isPending && <Loader className='mr-2 size-4 animate-spin' />}
-							{buttonText}
+							Daftar
 						</Button>
 					</div>
 				</form>

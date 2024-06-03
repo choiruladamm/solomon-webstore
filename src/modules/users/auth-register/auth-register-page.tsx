@@ -12,11 +12,15 @@ import { otpDto } from '@/dto/otp.dto';
 import { registUserDto } from '@/dto/regist-user.dto';
 import {
 	DialogConfirmEmail,
-	FormEmail,
 	OtpVerification,
 	SelectVerification,
 } from '@/modules/partials/auth';
 import FormRegister from './form-register';
+import { toast } from 'sonner';
+import axios, { AxiosError } from 'axios';
+import { apiBackendUrl } from '@/lib/utils';
+import { setCookie } from 'cookies-next';
+import FormEmail from './form-email';
 
 interface AuthRegisterPageProps {}
 
@@ -25,6 +29,8 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 	const [isDialogConfirmOpen, setIsDialogConfirmOpen] =
 		React.useState<boolean>(false);
 	const [stepOtp, setStepOtp] = React.useState<number>(1);
+	const [isEmailRegistered, setIsEmailRegistered] =
+		React.useState<boolean>(false);
 
 	const router = useRouter();
 
@@ -55,29 +61,112 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 	});
 
 	const handleOpenDialogConfirm = async () => {
+		// setIsPending(true);
+
+		// const response = await axios.post(`${apiBackendUrl}/users/check`, {
+		// 	email: formSendOtp.getValues('email'),
+		// });
+		// if (response.status === 409) {
+		// 	setIsEmailRegistered(true);
+		// }
+		// setIsDialogConfirmOpen(true);
+		// try {
+		// } catch (error) {
+		// 	toast.error('Gagal memeriksa email, silahkan coba lagi');
+		// } finally {
+		// 	setIsPending(false);
+		// }
+
 		setIsPending(true);
-		setIsDialogConfirmOpen(true);
 		await new Promise(resolve => setTimeout(resolve, 1500));
+
+
+    try {
+      const response = await axios.post(`${apiBackendUrl}/users/check`, {
+        email: formSendOtp.getValues('email'),
+      });
+
+      if (response.status === 201 && response.data.isRegistered === false) {
+        setIsEmailRegistered(false);
+        setIsDialogConfirmOpen(true);
+      } else if (response.status === 409) {
+        setIsEmailRegistered(true);
+        setIsDialogConfirmOpen(true);
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorResponse = error.response;
+        if (errorResponse && errorResponse.status === 409) {
+          setIsEmailRegistered(true);
+          setIsDialogConfirmOpen(true);
+        } else {
+          toast.error('Gagal memeriksa email, silahkan coba lagi');
+        }
+      }
+    } finally {
+      setIsPending(false);
+    }
+	};
+
+	const handleSendOtp = async () => {
+		try {
+			await axios.post(`${apiBackendUrl}/send-mail	`, {
+				email: formSendOtp.getValues('email'),
+			});
+			toast.success('Kode OTP telah dikirim ke email Anda');
+			setStepOtp(3);
+			console.log(`
+			send otp to ${formSendOtp.getValues('email')}
+		`);
+		} catch (error) {
+			toast.error('Gagal mengirim OTP, silahkan coba lagi');
+		}
 	};
 
 	const handleVerifOtp = async (data: z.infer<typeof otpDto>) => {
 		setIsPending(true);
 		await new Promise(resolve => setTimeout(resolve, 1500));
-		console.log(`Email: ${formSendOtp.getValues('email')}, OTP: ${data.otp}`);
 
-		setIsPending(false);
-		setStepOtp(4);
+		try {
+			await axios.post(`${apiBackendUrl}/otp/verify`, {
+				email: formSendOtp.getValues('email'),
+				otp: data.otp,
+			});
+			toast.success('OTP berhasil diverifikasi');
+			setStepOtp(4);
+		} catch (error) {
+			toast.error('Gagal verifikasi OTP, silahkan coba lagi');
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	const handleRegistUser = async (data: z.infer<typeof registUserDto>) => {
 		setIsPending(true);
 		await new Promise(resolve => setTimeout(resolve, 3000));
-		console.log(
-			`Email: ${formSendOtp.getValues('email')}, Nama: ${data.fullName}, Password: ${data.password}`,
-		);
 
-		setIsPending(false);
-		router.replace('/');
+		const body = {
+			email: formSendOtp.getValues('email'),
+			fullname: data.fullName,
+			password: data.password,
+		};
+
+		try {
+			const res = await axios.post(`${apiBackendUrl}/users/register`, body);
+			if (res.status === 201) {
+				router.replace('/login');
+				toast.success('Berhasil mendaftar, silahkan login');
+			}
+
+			console.log(body);
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				toast.error(error.response?.data.message);
+				setIsPending(false);
+			}
+		} finally {
+			setIsPending(false);
+		}
 	};
 
 	return (
@@ -102,7 +191,6 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 						form={formSendOtp}
 						isPending={isPending}
 						onSubmit={handleOpenDialogConfirm}
-						buttonText='Daftar'
 					/>
 
 					{/* footer */}
@@ -123,12 +211,7 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 				<SelectVerification
 					email={formSendOtp.getValues('email')}
 					onBack={() => setStepOtp(1)}
-					onSelectMethod={() => {
-						console.log(`
-							send otp to ${formSendOtp.getValues('email')}
-						`);
-						setStepOtp(3);
-					}}
+					onSelectMethod={handleSendOtp}
 				/>
 			)}
 
@@ -163,8 +246,8 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 					setStepOtp(2);
 					setIsPending(false);
 					setIsDialogConfirmOpen(false);
-					console.log(formSendOtp.getValues('email'));
 				}}
+				isEmailRegistered={isEmailRegistered}
 			/>
 		</main>
 	);
