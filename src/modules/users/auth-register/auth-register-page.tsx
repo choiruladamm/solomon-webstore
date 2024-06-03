@@ -20,6 +20,7 @@ import FormRegister from './form-register';
 import { toast } from 'sonner';
 import axios, { AxiosError } from 'axios';
 import { apiBackendUrl } from '@/lib/utils';
+import { setCookie } from 'cookies-next';
 
 interface AuthRegisterPageProps {}
 
@@ -124,14 +125,17 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 		};
 
 		try {
-			await axios.post(`${apiBackendUrl}/users/register`, body);
-			toast.success('Berhasil mendaftar');
-			router.replace('/');
+			const res = await axios.post(`${apiBackendUrl}/users/register`, body);
+			if (res.status === 201) {
+				router.replace('/login');
+				toast.success('Berhasil mendaftar, silahkan login');
+			}
 
 			console.log(body);
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				toast.error(error.response?.data.message[0]);
+				toast.error(error.response?.data.message);
+				setIsPending(false);
 			}
 		} finally {
 			setIsPending(false);
