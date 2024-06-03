@@ -117,17 +117,21 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 		setIsPending(true);
 		await new Promise(resolve => setTimeout(resolve, 3000));
 
+		const body = {
+			email: formSendOtp.getValues('email'),
+			fullname: data.fullName,
+			password: data.password,
+		};
+
 		try {
-			await axios.post(`${apiBackendUrl}/users/register`, {
-				email: formSendOtp.getValues('email'),
-				fullName: data.fullName,
-				password: data.password,
-			});
+			await axios.post(`${apiBackendUrl}/users/register`, body);
 			toast.success('Berhasil mendaftar');
 			router.replace('/');
+
+			console.log(body);
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				toast.error(error.response?.data.message);
+				toast.error(error.response?.data.message[0]);
 			}
 		} finally {
 			setIsPending(false);
