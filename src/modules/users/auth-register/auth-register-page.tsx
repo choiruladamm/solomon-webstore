@@ -12,7 +12,6 @@ import { otpDto } from '@/dto/otp.dto';
 import { registUserDto } from '@/dto/regist-user.dto';
 import {
 	DialogConfirmEmail,
-	FormEmail,
 	OtpVerification,
 	SelectVerification,
 } from '@/modules/partials/auth';
@@ -21,6 +20,7 @@ import { toast } from 'sonner';
 import axios, { AxiosError } from 'axios';
 import { apiBackendUrl } from '@/lib/utils';
 import { setCookie } from 'cookies-next';
+import FormEmail from './form-email';
 
 interface AuthRegisterPageProps {}
 
@@ -61,24 +61,51 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 	});
 
 	const handleOpenDialogConfirm = async () => {
-		setIsPending(true);
-		await new Promise(resolve => setTimeout(resolve, 1500));
-		setIsDialogConfirmOpen(true);
+		// setIsPending(true);
 
+		// const response = await axios.post(`${apiBackendUrl}/users/check`, {
+		// 	email: formSendOtp.getValues('email'),
+		// });
+		// if (response.status === 409) {
+		// 	setIsEmailRegistered(true);
+		// }
+		// setIsDialogConfirmOpen(true);
 		// try {
-		// 	const response = await axios.post(`${apiBackendUrl}/users/register`, {
-		// 		email: formSendOtp.getValues('email'),
-		// 	});
-		// 	if (response.status === 201) {
-		// 		setIsEmailRegistered(true);
-		// 	} else if (response.status === 409) {
-		// 		setIsEmailRegistered(false);
-		// 	}
 		// } catch (error) {
 		// 	toast.error('Gagal memeriksa email, silahkan coba lagi');
 		// } finally {
 		// 	setIsPending(false);
 		// }
+
+		setIsPending(true);
+		await new Promise(resolve => setTimeout(resolve, 1500));
+
+
+    try {
+      const response = await axios.post(`${apiBackendUrl}/users/check`, {
+        email: formSendOtp.getValues('email'),
+      });
+
+      if (response.status === 201 && response.data.isRegistered === false) {
+        setIsEmailRegistered(false);
+        setIsDialogConfirmOpen(true);
+      } else if (response.status === 409) {
+        setIsEmailRegistered(true);
+        setIsDialogConfirmOpen(true);
+      }
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorResponse = error.response;
+        if (errorResponse && errorResponse.status === 409) {
+          setIsEmailRegistered(true);
+          setIsDialogConfirmOpen(true);
+        } else {
+          toast.error('Gagal memeriksa email, silahkan coba lagi');
+        }
+      }
+    } finally {
+      setIsPending(false);
+    }
 	};
 
 	const handleSendOtp = async () => {
@@ -164,7 +191,6 @@ const AuthRegisterPage: FC<AuthRegisterPageProps> = ({}) => {
 						form={formSendOtp}
 						isPending={isPending}
 						onSubmit={handleOpenDialogConfirm}
-						buttonText='Daftar'
 					/>
 
 					{/* footer */}
