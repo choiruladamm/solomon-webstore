@@ -11,7 +11,6 @@ import { sendOtpDto } from '@/dto/send-otp.dto';
 import { otpDto } from '@/dto/otp.dto';
 import {
 	DialogConfirmEmail,
-	FormEmail,
 	OtpVerification,
 	SelectVerification,
 } from '@/modules/partials/auth';
